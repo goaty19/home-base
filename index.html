@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Home Base">
+<meta name="theme-color" content="#12161c">
+<title>Burton Home Base</title>
+<style>
+:root{
+  --bg:#12161c; --surface:#1a2029; --surface2:#222a35; --line:#2e3846;
+  --text:#e8edf4; --muted:#8e9bad; --accent:#6ea8fe; --warm:#f0a868;
+  --good:#63c69a; --bad:#e0736b; --radius:14px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--text);
+  font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  overscroll-behavior-y:none}
+body{padding:env(safe-area-inset-top) 0 calc(72px + env(safe-area-inset-bottom))}
+.wrap{max-width:560px;margin:0 auto;padding:16px}
+h1{font-size:20px;margin:0 0 2px}
+h2{font-size:15px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:22px 0 10px;font-weight:600}
+.sub{color:var(--muted);font-size:14px;margin:0 0 18px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px;margin-bottom:10px}
+.row{display:flex;align-items:center;gap:12px}
+.spread{justify-content:space-between}
+button,.btn{font:inherit;color:inherit;background:var(--surface2);border:1px solid var(--line);
+  border-radius:10px;padding:11px 14px;cursor:pointer;display:inline-flex;align-items:center;
+  gap:8px;justify-content:center}
+button:active{transform:scale(.98)}
+.primary{background:var(--accent);color:#0d1117;border-color:transparent;font-weight:650}
+.danger{color:var(--bad)} .ok{color:var(--good)}
+.full{width:100%}
+.tile{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:15px 14px;
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);margin-bottom:8px}
+.tile .em{font-size:20px;width:26px;text-align:center}
+.tile .ct{margin-left:auto;color:var(--muted);font-size:14px}
+textarea,input,select{width:100%;background:var(--surface2);border:1px solid var(--line);
+  color:var(--text);border-radius:10px;padding:12px;font:inherit}
+textarea{min-height:130px;resize:vertical}
+label{display:block;font-size:13px;color:var(--muted);margin:14px 0 6px;letter-spacing:.02em}
+.chip{padding:7px 12px;border-radius:999px;background:var(--surface2);border:1px solid var(--line);font-size:14px}
+.chip.on{background:var(--accent);color:#0d1117;border-color:transparent;font-weight:600}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.fab{position:fixed;right:16px;bottom:calc(78px + env(safe-area-inset-bottom));width:58px;height:58px;
+  border-radius:50%;background:var(--accent);color:#0d1117;font-size:30px;border:none;
+  box-shadow:0 6px 20px rgba(0,0,0,.45);z-index:40}
+nav{position:fixed;left:0;right:0;bottom:0;background:rgba(18,22,28,.94);
+  backdrop-filter:blur(12px);border-top:1px solid var(--line);display:flex;
+  padding:8px 0 calc(8px + env(safe-area-inset-bottom));z-index:30}
+nav button{flex:1;background:none;border:none;color:var(--muted);font-size:11px;
+  flex-direction:column;gap:3px;padding:4px}
+nav button span{font-size:19px}
+nav button.on{color:var(--accent)}
+.badge{background:var(--warm);color:#1a1206;border-radius:999px;padding:1px 8px;font-size:12px;font-weight:700}
+.muted{color:var(--muted)} .sm{font-size:13px}
+.slider{-webkit-appearance:none;height:6px;background:var(--surface2);border-radius:3px;padding:0;border:none}
+.slider::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;border-radius:50%;
+  background:var(--accent);border:3px solid var(--bg)}
+.empty{text-align:center;color:var(--muted);padding:38px 20px;font-size:15px}
+.hidden{display:none!important}
+.sheet{position:fixed;inset:0;background:rgba(8,10,14,.72);z-index:50;display:flex;align-items:flex-end}
+.sheet .inner{background:var(--surface);width:100%;max-width:560px;margin:0 auto;
+  border-radius:18px 18px 0 0;padding:18px 16px calc(24px + env(safe-area-inset-bottom));border:1px solid var(--line)}
+.tag{font-size:12px;background:var(--surface2);border:1px solid var(--line);
+  padding:3px 9px;border-radius:999px;color:var(--muted)}
+.dot{width:9px;height:9px;border-radius:50%;display:inline-block}
+svg text{font-size:10px;fill:#8e9bad}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:96px;background:var(--surface2);
+  border:1px solid var(--line);padding:10px 18px;border-radius:999px;z-index:60;font-size:14px;
+  opacity:0;pointer-events:none;transition:opacity .2s}
+.toast.on{opacity:1}
+</style>
+</head>
+<body>
+
+<div id="app"></div>
+
+<button class="fab" onclick="go('capture')" aria-label="Quick capture">+</button>
+
+<nav>
+  <button id="nav-home" onclick="go('home')"><span>🏠</span>Home</button>
+  <button id="nav-review" onclick="go('review')"><span>📝</span>Review</button>
+  <button id="nav-graph" onclick="go('graph')"><span>📊</span>Graph</button>
+  <button id="nav-all" onclick="go('all')"><span>🗂️</span>All</button>
+  <button id="nav-settings" onclick="go('settings')"><span>⚙️</span>More</button>
+</nav>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   BURTON HOME BASE — single-file prototype
+   Data model mirrors the "everything is an Item" decision.
+   Storage: localStorage (swap for Supabase later — see settings)
+   ============================================================ */
+
+const TYPES = {
+  grievance: {label:'Petty Grievance', emoji:'😤', color:'#e0736b'},
+  gratitude: {label:'Gratitude',       emoji:'❤️', color:'#63c69a'},
+  goal:      {label:'Goal',            emoji:'🎯', color:'#6ea8fe'},
+  value:     {label:'Value',           emoji:'⭐', color:'#f0a868'},
+  rule:      {label:'Rule',            emoji:'🤝', color:'#b48ce0'}
+};
+const STATUS = ['draft','shared','acknowledged','resolved','archived'];
+
+const DB = {
+  key:'bhb.v1',
+  load(){ try{ return JSON.parse(localStorage.getItem(this.key)) || {items:[], me:'Bethany', lastReview:null}; }
+          catch(e){ return {items:[], me:'Bethany', lastReview:null}; } },
+  save(s){ localStorage.setItem(this.key, JSON.stringify(s)); }
+};
+let S = DB.load();
+const persist = () => DB.save(S);
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+const esc = s => (s||'').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('on');
+  clearTimeout(t._x); t._x = setTimeout(()=>t.classList.remove('on'), 1600);
+}
+
+/* ---------- routing ---------- */
+let route = 'home', ctx = {};
+function go(r, c){ route = r; ctx = c || {}; window.scrollTo(0,0); render(); }
+
+/* ---------- item helpers ---------- */
+const drafts   = () => S.items.filter(i => i.status === 'draft');
+const active   = () => S.items.filter(i => !['archived','resolved'].includes(i.status));
+const byType   = t => S.items.filter(i => i.type === t && i.status !== 'archived');
+const daysAgo  = ts => Math.floor((Date.now() - ts) / 86400000);
+const ageLabel = ts => { const d = daysAgo(ts); return d===0?'today':d===1?'yesterday':d+' days ago'; };
+
+function addItem(text){
+  const it = {
+    id: uid(), type:null, title: text.trim().slice(0,80), description: text.trim(),
+    createdBy: S.me, createdAt: Date.now(), updatedAt: Date.now(),
+    status:'draft', tags:[], impact:5, urgency:5, outcome:'', occurrences:[Date.now()], comments:[]
+  };
+  S.items.unshift(it); persist(); return it;
+}
+
+/* ============================================================
+   SCREENS
+   ============================================================ */
+
+function screenHome(){
+  const d = drafts().length;
+  const hr = new Date().getHours();
+  const greet = hr < 12 ? 'Good morning' : hr < 18 ? 'Good afternoon' : 'Good evening';
+  const g7 = byType('gratitude').filter(i => daysAgo(i.createdAt) < 7).length;
+  const p7 = byType('grievance').filter(i => daysAgo(i.createdAt) < 7).length;
+  const ratio = p7 === 0 ? (g7>0?'∞':'—') : (g7/p7).toFixed(1);
+  const reviewedToday = S.lastReview && daysAgo(S.lastReview) === 0;
+
+  return `<div class="wrap">
+    <h1>🏠 Burton Home Base</h1>
+    <p class="sub">${greet}, ${esc(S.me)}.</p>
+
+    <h2>Today's focus</h2>
+    ${ d ? `<button class="tile" onclick="go('review')">
+        <span class="em">📝</span><div><div>Review drafts</div>
+        <div class="sm muted">Decide: delete, keep, or share</div></div>
+        <span class="badge">${d}</span></button>`
+      : `<div class="card"><div class="row"><span class="em">✅</span>
+         <div><div>Inbox is clear</div><div class="sm muted">Nothing waiting on you.</div></div></div></div>` }
+    ${ !reviewedToday && d===0 ? '' : '' }
+    <button class="tile" onclick="quickType('gratitude')">
+      <span class="em">❤️</span><div><div>Log a gratitude</div>
+      <div class="sm muted">${g7} in the last 7 days</div></div></button>
+
+    <h2>Relationship</h2>
+    <button class="tile" onclick="go('graph')"><span class="em">📊</span>
+      <div>Grievance graph</div><span class="ct">${byType('grievance').filter(i=>i.status!=='resolved').length} open</span></button>
+    <button class="tile" onclick="go('list',{type:'gratitude'})"><span class="em">❤️</span>
+      <div>Gratitude</div><span class="ct">${byType('gratitude').length}</span></button>
+    <button class="tile" onclick="go('list',{type:'value'})"><span class="em">⭐</span>
+      <div>Values</div><span class="ct">${byType('value').length}</span></button>
+    <button class="tile" onclick="go('list',{type:'rule'})"><span class="em">🤝</span>
+      <div>Rules</div><span class="ct">${byType('rule').length}</span></button>
+    <button class="tile" onclick="go('list',{type:'goal'})"><span class="em">🎯</span>
+      <div>Goals</div><span class="ct">${byType('goal').length}</span></button>
+
+    <h2>Health check</h2>
+    <div class="card"><div class="row spread">
+      <div><div class="sm muted">Gratitude : grievance (7 days)</div>
+      <div style="font-size:26px;font-weight:650">${ratio}<span class="sm muted" style="font-weight:400">  ratio</span></div></div>
+      <div class="sm muted" style="text-align:right;max-width:48%">
+        ${ratio!=='—' && ratio!=='∞' && parseFloat(ratio) < 1
+          ? 'More complaints than appreciation logged this week.'
+          : 'Balance looks healthy.'}</div>
+    </div></div>
+  </div>`;
+}
+
+function screenCapture(){
+  return `<div class="wrap">
+    <h1>Quick capture</h1>
+    <p class="sub">Get it out of your head. Categorize later.</p>
+    <textarea id="cap" placeholder="What's on your mind?" autofocus></textarea>
+    <div style="height:12px"></div>
+    <button class="btn primary full" onclick="saveCapture()">Save draft</button>
+    <div style="height:8px"></div>
+    <button class="btn full" onclick="go('home')">Cancel</button>
+    <p class="sub" style="margin-top:20px">Saved as an uncategorized draft. Nothing is shared until you choose to share it.</p>
+  </div>`;
+}
+function saveCapture(){
+  const v = document.getElementById('cap').value;
+  if(!v.trim()){ toast('Nothing to save'); return; }
+  addItem(v); toast('Saved — 8 seconds'); go('home');
+}
+function quickType(type){
+  go('capture');
+  setTimeout(()=>{ const el=document.getElementById('cap');
+    if(el){ el.dataset.type=type; el.placeholder = TYPES[type].emoji+' '+TYPES[type].label+'…'; el.focus(); } },30);
+}
+
+function screenReview(){
+  const d = drafts();
+  if(!d.length) return `<div class="wrap"><h1>Daily review</h1>
+    <div class="empty">🎉<br><br>No drafts to review.<br>You're caught up.</div>
+    <button class="btn full" onclick="go('home')">Back home</button></div>`;
+  return `<div class="wrap">
+    <h1>Daily review</h1>
+    <p class="sub">${d.length} draft${d.length>1?'s':''} · about ${Math.ceil(d.length*20/60)} min</p>
+    ${d.map(i => `<div class="card">
+      <div class="row spread" style="align-items:flex-start">
+        <div style="flex:1"><div style="font-weight:600">${esc(i.title)}</div>
+        <div class="sm muted">${ageLabel(i.createdAt)}${i.type?' · '+TYPES[i.type].emoji+' '+TYPES[i.type].label:' · uncategorized'}</div></div>
+      </div>
+      <div class="sm muted" style="margin:10px 0 12px">Still important?</div>
+      <div class="row" style="gap:8px">
+        <button class="danger" style="flex:1" onclick="decide('${i.id}','delete')">Delete</button>
+        <button style="flex:1" onclick="decide('${i.id}','keep')">Keep</button>
+        <button class="primary" style="flex:1" onclick="go('detail',{id:'${i.id}'})">Share…</button>
+      </div>
+    </div>`).join('')}
+    <button class="btn full" onclick="finishReview()">Done reviewing</button>
+  </div>`;
+}
+function decide(id, action){
+  const i = S.items.find(x=>x.id===id); if(!i) return;
+  if(action==='delete'){ S.items = S.items.filter(x=>x.id!==id); toast('Let it go 🌬️'); }
+  if(action==='keep'){ i.updatedAt = Date.now(); i.keptCount = (i.keptCount||0)+1; toast('Kept as draft'); }
+  persist(); render();
+}
+function finishReview(){ S.lastReview = Date.now(); persist(); toast('Review complete'); go('home'); }
+
+function screenDetail(){
+  const i = S.items.find(x=>x.id===ctx.id);
+  if(!i) return `<div class="wrap"><div class="empty">Item not found.</div></div>`;
+  const isG = i.type === 'grievance';
+  return `<div class="wrap">
+    <button class="btn" onclick="history.back?go('review'):go('home')" style="margin-bottom:14px">← Back</button>
+    <h1>${i.type?TYPES[i.type].emoji+' ':''}Item detail</h1>
+
+    <label>What happened</label>
+    <textarea id="f-desc" style="min-height:90px" oninput="upd('${i.id}','description',this.value)">${esc(i.description)}</textarea>
+
+    <label>Type</label>
+    <div class="chips">${Object.entries(TYPES).map(([k,v])=>
+      `<button class="chip ${i.type===k?'on':''}" onclick="upd('${i.id}','type','${k}',true)">${v.emoji} ${v.label}</button>`).join('')}</div>
+
+    ${isG||!i.type?`
+    <label>Impact — how much does this actually affect you? <b id="lab-i">${i.impact}</b>/10</label>
+    <input class="slider" type="range" min="1" max="10" value="${i.impact}"
+      oninput="document.getElementById('lab-i').textContent=this.value;upd('${i.id}','impact',+this.value)">
+
+    <label>Urgency — how soon does it need attention? <b id="lab-u">${i.urgency}</b>/10</label>
+    <input class="slider" type="range" min="1" max="10" value="${i.urgency}"
+      oninput="document.getElementById('lab-u').textContent=this.value;upd('${i.id}','urgency',+this.value)">
+
+    <label>Desired outcome — what would "solved" look like?</label>
+    <input id="f-out" value="${esc(i.outcome)}" placeholder="e.g. Shoes go on the rack, not the floor"
+      oninput="upd('${i.id}','outcome',this.value)">` : ''}
+
+    <label>Tags</label>
+    <div class="chips">${['chores','kids','money','time','communication','logistics'].map(t=>
+      `<button class="chip ${i.tags.includes(t)?'on':''}" onclick="toggleTag('${i.id}','${t}')">${t}</button>`).join('')}</div>
+
+    <label>Status</label>
+    <div class="chips">${STATUS.map(s=>
+      `<button class="chip ${i.status===s?'on':''}" onclick="upd('${i.id}','status','${s}',true)">${s}</button>`).join('')}</div>
+
+    <div style="height:20px"></div>
+    <div class="card sm muted">
+      Created ${new Date(i.createdAt).toLocaleString()} by ${esc(i.createdBy)}<br>
+      Occurrences: ${i.occurrences.length}
+      ${i.status==='draft'?'<br><b style="color:var(--warm)">Private draft — not visible to anyone else.</b>':''}
+    </div>
+
+    <div class="row" style="gap:8px;margin-top:12px">
+      <button style="flex:1" onclick="bump('${i.id}')">+1 occurrence</button>
+      ${i.status==='draft'
+        ? `<button class="primary" style="flex:1" onclick="upd('${i.id}','status','shared',true);toast('Shared')">Share it</button>`
+        : `<button class="ok" style="flex:1" onclick="upd('${i.id}','status','resolved',true);toast('Resolved ✅')">Mark resolved</button>`}
+    </div>
+    <div style="height:10px"></div>
+    <button class="btn full danger" onclick="if(confirm('Delete permanently?')){S.items=S.items.filter(x=>x.id!=='${i.id}');persist();go('home')}">Delete</button>
+  </div>`;
+}
+function upd(id, field, val, rerender){
+  const i = S.items.find(x=>x.id===id); if(!i) return;
+  i[field] = val; i.updatedAt = Date.now(); persist(); if(rerender) render();
+}
+function toggleTag(id, t){
+  const i = S.items.find(x=>x.id===id);
+  i.tags = i.tags.includes(t) ? i.tags.filter(x=>x!==t) : [...i.tags, t];
+  persist(); render();
+}
+function bump(id){
+  const i = S.items.find(x=>x.id===id);
+  i.occurrences.push(Date.now()); persist(); toast('Happened again — logged'); render();
+}
+
+function screenGraph(){
+  const g = byType('grievance').filter(i => i.status !== 'resolved' && i.type);
+  if(!g.length) return `<div class="wrap"><h1>Grievance graph</h1>
+    <div class="empty">No grievances plotted yet.<br><br>Capture a few, categorize them in review,<br>and they'll appear here.</div></div>`;
+
+  const W=340,H=340,P=34;
+  const x = v => P + (v-1)/9*(W-P-10);
+  const y = v => H-P - (v-1)/9*(H-P-14);
+  const pts = g.map(i=>{
+    const r = 6 + Math.min(i.occurrences.length,6)*2;
+    return `<circle cx="${x(i.urgency)}" cy="${y(i.impact)}" r="${r}" fill="${TYPES.grievance.color}"
+      fill-opacity=".55" stroke="${TYPES.grievance.color}" stroke-width="1.5"
+      onclick="go('detail',{id:'${i.id}'})" style="cursor:pointer"><title>${esc(i.title)}</title></circle>`;
+  }).join('');
+
+  const hot = g.filter(i=>i.impact>=6&&i.urgency>=6).length;
+  return `<div class="wrap">
+    <h1>Grievance graph</h1>
+    <p class="sub">Impact vs. urgency. Bubble size = how often it recurs.</p>
+    <div class="card" style="padding:8px">
+    <svg viewBox="0 0 ${W} ${H}" width="100%">
+      <rect x="${x(5.5)}" y="0" width="${W-x(5.5)}" height="${y(5.5)}" fill="#e0736b" fill-opacity=".07"/>
+      <line x1="${P}" y1="${H-P}" x2="${W-6}" y2="${H-P}" stroke="#2e3846"/>
+      <line x1="${P}" y1="8" x2="${P}" y2="${H-P}" stroke="#2e3846"/>
+      <line x1="${x(5.5)}" y1="8" x2="${x(5.5)}" y2="${H-P}" stroke="#2e3846" stroke-dasharray="3 4"/>
+      <line x1="${P}" y1="${y(5.5)}" x2="${W-6}" y2="${y(5.5)}" stroke="#2e3846" stroke-dasharray="3 4"/>
+      ${pts}
+      <text x="${(W+P)/2}" y="${H-8}" text-anchor="middle">Urgency →</text>
+      <text x="12" y="${(H-P)/2}" text-anchor="middle" transform="rotate(-90 12 ${(H-P)/2})">Impact →</text>
+      <text x="${W-10}" y="20" text-anchor="end" fill="#e0736b">talk about it</text>
+      <text x="${P+6}" y="${H-P-8}">let it go</text>
+    </svg></div>
+    <div class="card sm"><b>${hot}</b> item${hot===1?'':'s'} in the high-impact / high-urgency corner.
+      ${hot>3?' That is a lot for one conversation — pick the top two.':''}</div>
+    <h2>Plotted</h2>
+    ${g.sort((a,b)=>(b.impact*b.urgency)-(a.impact*a.urgency)).map(i=>`
+      <button class="tile" onclick="go('detail',{id:'${i.id}'})">
+        <span class="dot" style="background:${TYPES.grievance.color}"></span>
+        <div><div>${esc(i.title)}</div>
+        <div class="sm muted">impact ${i.impact} · urgency ${i.urgency} · ×${i.occurrences.length} · ${i.status}</div></div>
+      </button>`).join('')}
+  </div>`;
+}
+
+function screenList(){
+  const t = ctx.type, items = byType(t);
+  return `<div class="wrap">
+    <button class="btn" onclick="go('home')" style="margin-bottom:14px">← Back</button>
+    <h1>${TYPES[t].emoji} ${TYPES[t].label}</h1>
+    ${items.length? items.map(i=>`<button class="tile" onclick="go('detail',{id:'${i.id}'})">
+      <div style="flex:1"><div>${esc(i.title)}</div>
+      <div class="sm muted">${ageLabel(i.createdAt)} · ${i.status}</div></div></button>`).join('')
+      : `<div class="empty">Nothing here yet.</div>`}
+    <button class="btn primary full" onclick="quickType('${t}')">+ Add ${TYPES[t].label.toLowerCase()}</button>
+  </div>`;
+}
+
+function screenAll(){
+  const items = [...S.items].sort((a,b)=>b.updatedAt-a.updatedAt);
+  return `<div class="wrap">
+    <h1>All items</h1>
+    <p class="sub">${items.length} total · ${drafts().length} draft</p>
+    ${items.length? items.map(i=>`<button class="tile" onclick="go('detail',{id:'${i.id}'})">
+      <span class="em">${i.type?TYPES[i.type].emoji:'📥'}</span>
+      <div style="flex:1"><div>${esc(i.title)}</div>
+      <div class="sm muted">${i.status} · ${ageLabel(i.createdAt)}${i.tags.length?' · '+i.tags.join(', '):''}</div></div>
+      </button>`).join('') : `<div class="empty">Nothing captured yet.<br>Tap + to start.</div>`}
+  </div>`;
+}
+
+function screenSettings(){
+  return `<div class="wrap">
+    <h1>Settings</h1>
+    <label>Your name</label>
+    <input value="${esc(S.me)}" oninput="S.me=this.value;persist()">
+
+    <h2>Your data</h2>
+    <div class="card sm muted">Everything lives in this browser only (localStorage). Nothing is uploaded anywhere.
+      Export regularly if this data matters to you.</div>
+    <button class="btn full" onclick="exportJSON()">Export JSON backup</button>
+    <div style="height:8px"></div>
+    <button class="btn full" onclick="document.getElementById('imp').click()">Import backup</button>
+    <input id="imp" type="file" accept=".json" class="hidden" onchange="importJSON(this)">
+    <div style="height:8px"></div>
+    <button class="btn full" onclick="seed()">Load sample data</button>
+    <div style="height:8px"></div>
+    <button class="btn full danger" onclick="if(confirm('Erase everything?')){S={items:[],me:S.me,lastReview:null};persist();go('home')}">Erase all data</button>
+
+    <h2>Install on your phone</h2>
+    <div class="card sm muted">
+      <b>iPhone:</b> open this page in Safari → Share → <b>Add to Home Screen</b>. It then opens full-screen with no browser chrome.<br><br>
+      <b>Android:</b> Chrome menu → <b>Install app</b>.
+    </div>
+
+    <h2>Next step: real sharing</h2>
+    <div class="card sm muted">This prototype is single-device on purpose. To share items with a second person,
+      the only piece that changes is the <code>DB</code> object at the top of this file — swap localStorage
+      for a hosted database and add a household ID. Everything else stays.</div>
+    <div style="height:30px"></div>
+  </div>`;
+}
+
+function exportJSON(){
+  const b = new Blob([JSON.stringify(S,null,2)],{type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(b);
+  a.download = 'burton-home-base-' + new Date().toISOString().slice(0,10) + '.json';
+  a.click(); toast('Backup downloaded');
+}
+function importJSON(el){
+  const f = el.files[0]; if(!f) return;
+  const r = new FileReader();
+  r.onload = e => { try{ S = JSON.parse(e.target.result); persist(); toast('Imported'); go('home'); }
+                    catch(err){ toast('Bad file'); } };
+  r.readAsText(f);
+}
+function seed(){
+  const D = 86400000, n = Date.now();
+  S.items = [
+    {id:uid(),type:'grievance',title:'Wet towels on the bed',description:'Wet towels left on the bed after showers.',createdBy:S.me,createdAt:n-2*D,updatedAt:n-2*D,status:'shared',tags:['chores'],impact:6,urgency:7,outcome:'Towels go on the hook.',occurrences:[n-9*D,n-5*D,n-2*D],comments:[]},
+    {id:uid(),type:'grievance',title:'Shoes by the front door',description:'Shoes pile up by the front door.',createdBy:S.me,createdAt:n-4*D,updatedAt:n-4*D,status:'draft',tags:['chores'],impact:3,urgency:2,outcome:'',occurrences:[n-4*D],comments:[]},
+    {id:uid(),type:'grievance',title:'Forgot to plan date night',description:'Date night keeps slipping.',createdBy:S.me,createdAt:n-6*D,updatedAt:n-6*D,status:'draft',tags:['time','communication'],impact:8,urgency:6,outcome:'One planned night per month, on the calendar.',occurrences:[n-40*D,n-6*D],comments:[]},
+    {id:uid(),type:'gratitude',title:'Handled bedtime solo so I could work',description:'He took bedtime by himself Thursday.',createdBy:S.me,createdAt:n-1*D,updatedAt:n-1*D,status:'shared',tags:['kids'],impact:5,urgency:1,outcome:'',occurrences:[n-1*D],comments:[]},
+    {id:uid(),type:'gratitude',title:'Coffee made before I woke up',description:'',createdBy:S.me,createdAt:n-3*D,updatedAt:n-3*D,status:'shared',tags:[],impact:5,urgency:1,outcome:'',occurrences:[n-3*D],comments:[]},
+    {id:uid(),type:'rule',title:'No hard conversations after 9 PM',description:'Nothing important gets decided when we are exhausted.',createdBy:S.me,createdAt:n-20*D,updatedAt:n-20*D,status:'shared',tags:['communication'],impact:5,urgency:1,outcome:'',occurrences:[n-20*D],comments:[]},
+    {id:uid(),type:'value',title:'Assume good intent first',description:'',createdBy:S.me,createdAt:n-25*D,updatedAt:n-25*D,status:'shared',tags:[],impact:5,urgency:1,outcome:'',occurrences:[n-25*D],comments:[]},
+    {id:uid(),type:null,title:'Reschedule the pediatrician',description:'Reschedule the pediatrician appointment.',createdBy:S.me,createdAt:n-3600000,updatedAt:n-3600000,status:'draft',tags:['logistics'],impact:5,urgency:8,outcome:'',occurrences:[n-3600000],comments:[]}
+  ];
+  persist(); toast('Sample data loaded'); go('home');
+}
+
+/* ---------- render ---------- */
+function render(){
+  const screens = {home:screenHome, capture:screenCapture, review:screenReview,
+    detail:screenDetail, graph:screenGraph, list:screenList, all:screenAll, settings:screenSettings};
+  document.getElementById('app').innerHTML = (screens[route]||screenHome)();
+  ['home','review','graph','all','settings'].forEach(r=>{
+    const b = document.getElementById('nav-'+r);
+    if(b) b.classList.toggle('on', r===route);
+  });
+  document.querySelector('.fab').classList.toggle('hidden', route==='capture');
+}
+render();
+</script>
+</body>
+</html>
